@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monster Slayer</title>
+    <script src="https://npmcdn.com/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="css/foundation.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="vue.js"></script>
+</head>
+<body>
+<div id="app">
+    <section class="row">
+        <div class="small-6 columns">
+            <h1 class="text-center">YOU</h1>
+            <div class="healthbar">
+                <div class="healthbar text-center"
+                style="background-color: green; margin: 0; color: white;"
+                :style="{width : userHealth+'%'}">
+                {{userHealth}}
+                </div>
+            </div>
+        </div>
+        <div class="small-6 columns">
+            <h1 class="text-center">MONSTER</h1>
+            <div class="healthbar">
+                <div class="healthbar text-center"
+                style="background-color: green; margin: 0; color: white;"
+                :style="{width: monsterHealth + '%'}">
+                {{monsterHealth}}
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="row controls">
+        <div class="small-12 columns">
+            <button v-if="!newGame" id="start-game" @click="startGame()">START NEW GAME</button>
+        </div>
+    </section>
+    <section v-if="newGame" class="row controls">
+        <div class="small-12 columns">
+            <!-- <template v-if="monsterDead">
+              {{alert("fnfwf")}}
+            </template> -->
+            <button id="attack" @click="userAttach">ATTACK</button>
+            <button id="special-attack" @click="userSpeacialAttach">SPECIAL ATTACK</button>
+            <button id="heal" @click="userHeal">HEAL</button>
+            <button id="give-up" @click="giveUp">GIVE UP</button>
+
+        </div>
+    </section>
+    <section class="row log" v-if="information.length >0">
+        <div class="small-12 columns">
+            <ul>
+                <li v-for="info in information"
+                :class="{'player-turn': info.isPlayer, 'monster-turn': !info.isPlayer }">
+                  {{info.text}}
+                </li>
+            </ul>
+        </div>
+    </section>
+</div>
+
+<script>
+new Vue({
+  el: '#app',
+  data: {
+  	userHealth: 100,
+    monsterHealth : 100,
+    newGame : false,
+    monsterDead : false,
+    userDead : false,
+    information : []
+
+  },
+  methods:{
+  	startGame: function(){
+    	this.newGame = true;
+      this.userHealth = 100;
+      this.monsterHealth = 100;
+      this.information = [];
+    },
+  	userAttach: function(){
+      // calculate damage
+      var damage = Math.round(5+(Math.random())*15);
+    	this.monsterHealth -= damage;
+
+      // adding information
+      this.information.unshift({
+        isPlayer : true,
+        text: "Player damaged Monster by " + damage
+      });
+
+      // if game ends after user's attach:
+      if(this.check()){
+        return; // we return so that the rest of the code will not be excuted
+      }
+      this.monsterAttach();
+    },
+
+    userSpeacialAttach: function(){
+      var damage = Math.round(5+(Math.random())*20);
+    	this.monsterHealth -= damage;
+
+      this.information.unshift({
+        isPlayer : true,
+        text: "Player special damaged Monster by " + damage
+      });
+
+      if(this.check()){
+        return;
+      }
+      this.monsterAttach();
+    },
+
+    userHeal: function(){
+      // make sure user's health bar doesn't exceed 100
+      if(this.userHealth <= 80){
+        this.userHealth += 15;
+      }
+      else{
+        this.userHealth = 100;
+      }
+      this.information.unshift({
+        isPlayer : true,
+        text: "Player healed by " + 15
+      });
+      if(this.check()){
+        return;
+      }
+      this.monsterAttach();
+    },
+
+    giveUp: function(){
+      if(confirm("User Gives Up! New game?")){
+        this.startGame();
+      }
+      else{
+        this.newGame = false;
+      }
+    },
+
+    monsterAttach : function(){
+    	var damage = Math.round(9+(Math.random())*14);
+      this.userHealth -= damage;
+      this.information.unshift({
+        isPlayer : false,
+        text: "Monster damaged Player by " + damage
+      });
+      this.check();
+    },
+
+    check : function(){
+    	if(this.monsterHealth <= 0){
+      	//this.monsterDead = true;
+        if(confirm("User wins! New game?")){
+          this.startGame();
+        }
+        else{
+          this.newGame = false;
+        }
+        return true;
+      }
+      if(this.userHealth <= 0){
+      	//this.userDead = true;
+        if(confirm("Monster wins! New game?")){
+          this.startGame();
+        }
+        else{
+          this.newGame = false;
+        }
+        return true;
+      }
+      return false;
+    }
+
+  }
+});
+</script>
+
+</body>
+</html>
